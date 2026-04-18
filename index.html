@@ -129,12 +129,8 @@ body.light input[type=date]{color-scheme:light}
     <label class="lbl" style="margin-top:0">Email</label>
     <input type="email" id="lEmail" placeholder="vas@email.sk"/>
     <button class="btn primary" style="width:100%;margin-top:10px" onclick="doLogin()">Prihlásiť sa</button>
-    <div style="margin-top:10px;background:var(--bg3);border-radius:8px;padding:9px;font-size:12px;color:var(--t2)">
-      <div style="font-weight:700;margin-bottom:4px;color:var(--t1)">Demo:</div>
-      <div onclick="ql('admin@klub.sk')" style="cursor:pointer;padding:2px 0;color:var(--blue)">admin@klub.sk (Správca)</div>
-      <div onclick="ql('trener1@klub.sk')" style="cursor:pointer;padding:2px 0;color:var(--green)">trener1@klub.sk</div>
-      <div onclick="ql('trener2@klub.sk')" style="cursor:pointer;padding:2px 0;color:#a78bfa">trener2@klub.sk</div>
-    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--t3);text-align:center">Prístup majú len schválené emaily.<br>Kontaktujte správcu pre pridanie prístupu.</div>
+
   </div>
 </div>
 
@@ -410,10 +406,17 @@ function doLogin(){
   var em=document.getElementById('lEmail').value.trim().toLowerCase();
   var msg=document.getElementById('lMsg');
   if(!em){msg.innerHTML='<div class="alert danger">Zadajte email.</div>';return;}
-  if(!S.users.find(function(u){return u.email===em;})){msg.innerHTML='<div class="alert danger">Email nemá prístup.</div>';return;}
-  S.cu=em;localStorage.setItem('fr10_cu',em);showM();
+  // Check against DB-loaded users
+  var found=S.users.find(function(u){return u.email===em;});
+  if(!found){
+    msg.innerHTML='<div class="alert danger">Email nie je v zozname oprávnených používateľov. Kontaktujte správcu systému.</div>';
+    return;
+  }
+  S.cu=em;
+  localStorage.setItem('fr10_cu',em);
+  showM();
 }
-function ql(em){document.getElementById('lEmail').value=em;doLogin();}
+
 function doLogout(){S.cu=null;localStorage.removeItem('fr10_cu');showL();}
 function showL(){
   applyB();
