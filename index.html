@@ -235,26 +235,10 @@ function isPast(r){
 
 var S={
   cu:null,clubName:'Futbalové ihrisko',clubEmoji:'⚽',
-  pitches:[
-    {id:'p1',name:'Hlavná plocha',color:'#2563eb',sections:4,sn:['U7–U8 SZ','U9–U10 SV','U11–U12 JZ','U13+ JV'],active:true},
-    {id:'p2',name:'Tréningové ihrisko',color:'#16a34a',sections:4,sn:['Kvadrant 1','Kvadrant 2','Kvadrant 3','Kvadrant 4'],active:true},
-    {id:'p3',name:'Malé ihrisko',color:'#dc2626',sections:2,sn:['Sever','Juh'],active:true},
-    {id:'p4',name:'Miniihrisko',color:'#d97706',sections:1,sn:['Celé'],active:true}
-  ],
-  teams:['U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U17','U18','Dospelí'],
-  reservations:[
-    {id:'r1',pid:'p1',size:'quarter',ss:0,date:'2025-01-20',t0:9,t1:11,type:'Tréning',team:'U8',title:'',bB:0,bA:0,cr:'trener1@klub.sk',note:''},
-    {id:'r2',pid:'p1',size:'quarter',ss:1,date:'2025-01-20',t0:9,t1:10,type:'Tréning',team:'U9',title:'',bB:0,bA:0,cr:'trener2@klub.sk',note:''},
-    {id:'r3',pid:'p1',size:'half',ss:2,date:'2025-01-20',t0:10,t1:12,type:'Prípravný zápas',team:'U10',title:'vs FC Juventus',bB:60,bA:30,cr:'admin@klub.sk',note:''},
-    {id:'r4',pid:'p1',size:'full',ss:0,date:'2025-01-21',t0:10,t1:14,type:'Liga',team:'U15',title:'',bB:120,bA:60,cr:'trener1@klub.sk',note:''},
-    {id:'r5',pid:'p2',size:'quarter',ss:0,date:'2025-01-20',t0:8,t1:10,type:'Tréning',team:'U10',title:'',bB:0,bA:0,cr:'admin@klub.sk',note:''}
-  ],
-  users:[
-    {email:'admin@klub.sk',role:'admin',name:'Správca'},
-    {email:'trener1@klub.sk',role:'trener',name:'Tréner Novák'},
-    {email:'trener2@klub.sk',role:'trener',name:'Tréner Horák'},
-    {email:'trener3@klub.sk',role:'trener',name:'Tréner Kováč'}
-  ],
+  pitches:[],
+  teams:[],
+  reservations:[],
+  users:[],
   gDate:'2026-04-18',calM:{y:2026,m:3},eid:null,_sz:null,_selCells:null
 };
 
@@ -426,7 +410,6 @@ function doLogin(){
 
 function doLogout(){S.cu=null;localStorage.removeItem('fr10_cu');showL();}
 function showL(){
-  applyB();
   document.getElementById('lv').style.display='';
   document.getElementById('mv').style.display='none';
   loadFromDB().then(function(ok){
