@@ -653,7 +653,7 @@ function rAdd(){
   var nowDt=new Date();
   var todayStr=nowDt.getFullYear()+'-'+String(nowDt.getMonth()+1).padStart(2,'0')+'-'+String(nowDt.getDate()).padStart(2,'0');
   var nowH=nowDt.getHours();var nowM=nowDt.getMinutes();
-  var t0def=nowH+(nowM>=30?1:0); if(t0def<7)t0def=7; if(t0def>20)t0def=20;
+  var t0def=nowH+(nowM>=45?1:nowM>=30?0.75:nowM>=15?0.5:0.25); if(nowM<15&&nowM>0)t0def=nowH+0.25; if(nowM===0)t0def=nowH; t0def=Math.round(t0def*4)/4; if(t0def<7)t0def=7; if(t0def>20)t0def=20;
   var t1def=t0def+2; if(t1def>21)t1def=21;
   var d=e||{date:todayStr,t0:t0def,t1:t1def,pid:(S.pitches.filter(function(p){return p.active;})[0]||{}).id||'',size:'quarter',ss:0,type:'Tréning',team:'',title:'',bB:0,bA:0,note:''};
   if(!S._sz)S._sz=d.size;
@@ -663,7 +663,7 @@ function rAdd(){
   var cp=gp(d.pid)||ap[0];
   var tyO=ET.map(function(t){return'<option value="'+t.name+'"'+(d.type===t.name?' selected':'')+'>'+t.name+'</option>';}).join('');
   var bO=function(sel){return BO.map(function(b){var lbl=b===0?'Žiadny':b<60?b+' min':b===60?'1 hod':b===90?'1,5 hod':'2 hod';return'<option value="'+b+'"'+((sel||0)===b?' selected':'')+'>'+lbl+'</option>';}).join('');};
-  var toOpts=function(sel){var o='';for(var i=0;i<=28;i++){var h=7+Math.floor(i/2),m=i%2?30:0;if(h>21)break;var vl=h+m/60;o+='<option value="'+vl+'"'+(Math.abs(sel-vl)<0.01?' selected':'')+'>'+h+':'+(m===0?'00':'30')+'</option>';}return o;};
+  var toOpts=function(sel){var o='';for(var i=0;i<=56;i++){var h=7+Math.floor(i/4),m=(i%4)*15;if(h>21)break;var vl=h+m/60;o+='<option value="'+vl+'"'+(Math.abs(sel-vl)<0.01?' selected':'')+'>'+h+':'+(m===0?'00':String(m).padStart(2,'0'))+'</option>';}return o;};
   var pills=bldPills(d.team||'');
 
   v.innerHTML='<div class="card" style="max-width:580px">'
