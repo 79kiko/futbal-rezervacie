@@ -322,7 +322,14 @@ function loadFromDB(){
       });
     }
     if(teams.ok&&teams.data){
-      S.teams=teams.data.sort(function(a,b){return(a.sort_order||0)-(b.sort_order||0);}).map(function(t){return t.name;});
+      S.teams=teams.data.sort(function(a,b){
+        // Natural sort: extract leading text and number
+        function parse(s){var m=s.match(/^([A-Za-z]+)(\d+)?(.*)$/);return{pre:m?m[1].toUpperCase():'',num:m&&m[2]?parseInt(m[2]):0,suf:m&&m[3]?m[3].trim():''};}
+        var pa=parse(a.name),pb=parse(b.name);
+        if(pa.pre!==pb.pre)return pa.pre<pb.pre?-1:1;
+        if(pa.num!==pb.num)return pa.num-pb.num;
+        return pa.suf<pb.suf?-1:pa.suf>pb.suf?1:0;
+      }).map(function(t){return t.name;});
     }
     if(reservations.ok&&reservations.data){
       S.reservations=reservations.data.map(mapRes);
@@ -1136,11 +1143,20 @@ function svB(){
   var m=document.getElementById('bMsg');
   if(m){m.innerHTML='<div class="alert success" style="margin-top:8px">Uložené!</div>';setTimeout(function(){if(m)m.innerHTML='';},2000);}
 }
+function sortTeams(arr){
+  function parse(s){var m=s.match(/^([A-Za-z]+)(\d+)?(.*)$/);return{pre:m?m[1].toUpperCase():'',num:m&&m[2]?parseInt(m[2]):0,suf:m&&m[3]?m[3].trim():''};}
+  return arr.slice().sort(function(a,b){
+    var pa=parse(a),pb=parse(b);
+    if(pa.pre!==pb.pre)return pa.pre<pb.pre?-1:1;
+    if(pa.num!==pb.num)return pa.num-pb.num;
+    return pa.suf<pb.suf?-1:pa.suf>pb.suf?1:0;
+  });
+}
 function addTeam(){
   var el=document.getElementById('nti');var t=(el?el.value:'').trim();
   if(!t)return;if(S.teams.indexOf(t)>=0){alert('Tím existuje.');return;}
-  S.teams.push(t);
-  dbIns('teams',{name:t,sort_order:S.teams.length});
+  S.teams=sortTeams(S.teams.concat([t]));
+  dbIns('teams',{name:t,sort_order:0});
   if(el)el.value='';rAdmin();
 }
 function rmTeam(t){
