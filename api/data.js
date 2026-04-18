@@ -13,11 +13,21 @@ function sbHeaders() {
   };
 }
 
+// Different tables have different sort columns
+function orderClause(table) {
+  if (table === 'teams')        return 'sort_order.asc,name.asc';
+  if (table === 'reservations') return 'date.asc,t0.asc';
+  if (table === 'settings')     return 'key.asc';
+  return 'created_at.asc';   // users, pitches
+}
+
 async function sbGet(table) {
-  const url = SUPABASE_URL + '/rest/v1/' + table + '?select=*&order=created_at.asc';
+  const url = SUPABASE_URL + '/rest/v1/' + table
+    + '?select=*&order=' + orderClause(table);
   const r = await fetch(url, { headers: sbHeaders() });
-  if (!r.ok) throw new Error('GET ' + table + ' failed: ' + r.status + ' ' + await r.text());
-  return await r.json();
+  const text = await r.text();
+  if (!r.ok) throw new Error('GET ' + table + ' failed: ' + r.status + ' ' + text);
+  return JSON.parse(text);
 }
 
 async function sbInsert(table, data) {
@@ -27,8 +37,9 @@ async function sbInsert(table, data) {
     headers: sbHeaders(),
     body: JSON.stringify(data)
   });
-  if (!r.ok) throw new Error('INSERT ' + table + ' failed: ' + r.status + ' ' + await r.text());
-  return await r.json();
+  const text = await r.text();
+  if (!r.ok) throw new Error('INSERT ' + table + ' failed: ' + r.status + ' ' + text);
+  return text ? JSON.parse(text) : [];
 }
 
 async function sbUpdate(table, id, data) {
@@ -38,47 +49,51 @@ async function sbUpdate(table, id, data) {
     headers: sbHeaders(),
     body: JSON.stringify(data)
   });
-  if (!r.ok) throw new Error('UPDATE ' + table + ' failed: ' + r.status + ' ' + await r.text());
-  return await r.json();
+  const text = await r.text();
+  if (!r.ok) throw new Error('UPDATE ' + table + ' failed: ' + r.status + ' ' + text);
+  return text ? JSON.parse(text) : [];
 }
 
 async function sbDelete(table, id) {
   const url = SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id;
   const r = await fetch(url, {
     method: 'DELETE',
-    headers: sbHeaders()
+    headers: { ...sbHeaders(), 'Prefer': 'return=minimal' }
   });
-  if (!r.ok) throw new Error('DELETE ' + table + ' failed: ' + r.status + ' ' + await r.text());
+  if (!r.ok) {
+    const text = await r.text();
+    throw new Error('DELETE ' + table + ' failed: ' + r.status + ' ' + text);
+  }
   return [];
 }
 
 async function sbUpsertSetting(key, value) {
   const url = SUPABASE_URL + '/rest/v1/settings?on_conflict=key';
-  const headers = { ...sbHeaders(), 'Prefer': 'resolution=merge-duplicates,return=representation' };
+  const headers = {
+    ...sbHeaders(),
+    'Prefer': 'resolution=merge-duplicates,return=representation'
+  };
   const r = await fetch(url, {
     method: 'POST',
     headers,
     body: JSON.stringify({ key, value })
   });
-  if (!r.ok) throw new Error('UPSERT settings failed: ' + r.status + ' ' + await r.text());
-  return await r.json();
+  const text = await r.text();
+  if (!r.ok) throw new Error('UPSERT settings failed: ' + r.status + ' ' + text);
+  return text ? JSON.parse(text) : [];
 }
 
 module.exports = async function handler(req, res) {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Check env vars
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     return res.status(500).json({
       ok: false,
-      error: 'Chyba: SUPABASE_URL alebo SUPABASE_ANON_KEY nie su nastavene v Environment Variables na Vercel.'
+      error: 'SUPABASE_URL alebo SUPABASE_ANON_KEY nie su nastavene v Environment Variables.'
     });
   }
 
@@ -86,35 +101,25 @@ module.exports = async function handler(req, res) {
     let table, action, data, id;
 
     if (req.method === 'GET') {
-      table = req.query.table;
+      table  = req.query.table;
       action = req.query.action || 'select';
     } else {
       const body = req.body || {};
-      table = body.table;
+      table  = body.table;
       action = body.action;
-      data = body.data;
-      id = body.id;
+      data   = body.data;
+      id     = body.id;
     }
 
-    if (!table) {
-      return res.status(400).json({ ok: false, error: 'Chyba: chyba parameter "table"' });
-    }
+    if (!table) return res.status(400).json({ ok: false, error: 'Chyba: chyba parameter table' });
 
     let result;
-
-    if (action === 'select') {
-      result = await sbGet(table);
-    } else if (action === 'insert') {
-      result = await sbInsert(table, data);
-    } else if (action === 'update') {
-      result = await sbUpdate(table, id, data);
-    } else if (action === 'delete') {
-      result = await sbDelete(table, id);
-    } else if (action === 'upsert_setting') {
-      result = await sbUpsertSetting(data.key, data.value);
-    } else {
-      return res.status(400).json({ ok: false, error: 'Neznama akcia: ' + action });
-    }
+    if      (action === 'select')          result = await sbGet(table);
+    else if (action === 'insert')          result = await sbInsert(table, data);
+    else if (action === 'update')          result = await sbUpdate(table, id, data);
+    else if (action === 'delete')          result = await sbDelete(table, id);
+    else if (action === 'upsert_setting')  result = await sbUpsertSetting(data.key, data.value);
+    else return res.status(400).json({ ok: false, error: 'Neznama akcia: ' + action });
 
     return res.status(200).json({ ok: true, data: result });
 
