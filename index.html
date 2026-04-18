@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>ŠK Svätý Jur - rezervácie hracích plôch</title>
+<title>Futbal Rezervácie</title>
 <style>
 :root{
   --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;--bg4:#2a2f45;
@@ -149,11 +149,11 @@ body.light input[type=date]{color-scheme:light}
     </div>
   </div>
   <div class="tabs">
-    <div class="tab" id="tb-add" onclick="st('add')">+ Pridať rezerváciu</div>
     <div class="tab active" id="tb-gantt" onclick="st('gantt')">Graf</div>
     <div class="tab" id="tb-cal" onclick="st('cal')">Kalendár</div>
-    <div class="tab" id="tb-list" onclick="st('list')">Zoznam</div>
     <div class="tab" id="tb-pitches" onclick="st('pitches')">Plochy</div>
+    <div class="tab" id="tb-list" onclick="st('list')">Zoznam</div>
+    <div class="tab" id="tb-add" onclick="st('add')">+ Pridať</div>
     <div class="tab" id="tb-admin" style="display:none" onclick="st('admin')">&#x2699; Admin</div>
   </div>
   <div id="vw-gantt"></div>
@@ -297,7 +297,7 @@ function loadFromDB(){
   ]).then(function(results){
     var users=results[0],pitches=results[1],teams=results[2],reservations=results[3],settings=results[4];
     if(users.ok&&users.data){
-      S.users=users.data.map(function(u){return{email:u.email,name:u.name,role:u.role,_id:u.id};});
+      S.users=users.data.map(function(u){return{email:u.email,name:u.name,role:u.role,_id:u.id,last_login:u.last_login||null};});
     }
     if(pitches.ok&&pitches.data){
       S.pitches=pitches.data.map(function(p){
@@ -405,6 +405,11 @@ function doLogin(){
   }
   S.cu=em;
   localStorage.setItem('fr10_cu',em);
+  // Update last_login in DB
+  var foundUser=S.users.find(function(u){return u.email===em;});
+  if(foundUser&&foundUser._id){
+    dbUpd('users',foundUser._id,{last_login:new Date().toISOString()});
+  }
   showM();
 }
 
