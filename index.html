@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Futbal Rezervácie</title>
+<title>ŠK Svätý Jur - rezervácie hracích plôch</title>
 <style>
 :root{
   --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;--bg4:#2a2f45;
@@ -149,11 +149,11 @@ body.light input[type=date]{color-scheme:light}
     </div>
   </div>
   <div class="tabs">
+    <div class="tab" id="tb-add" onclick="st('add')">+ Pridať rezerváciu</div>
     <div class="tab active" id="tb-gantt" onclick="st('gantt')">Graf</div>
     <div class="tab" id="tb-cal" onclick="st('cal')">Kalendár</div>
     <div class="tab" id="tb-list" onclick="st('list')">Zoznam</div>
     <div class="tab" id="tb-pitches" onclick="st('pitches')">Plochy</div>
-    <div class="tab" id="tb-add" onclick="st('add')">+ Pridať rezerváciu</div>
     <div class="tab" id="tb-admin" style="display:none" onclick="st('admin')">&#x2699; Admin</div>
   </div>
   <div id="vw-gantt"></div>
