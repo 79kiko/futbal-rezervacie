@@ -1053,6 +1053,12 @@ function dRes(id){
 }
 
 // ── ADMIN ─────────────────────────────────────────────────────────────────
+function fmtLL(ts){
+  if(!ts)return 'Nikdy';
+  var d=new Date(ts);
+  return d.toLocaleDateString('sk-SK',{day:'numeric',month:'numeric',year:'numeric'})
+    +' '+d.toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'});
+}
 function rAdmin(){
   if(!isAdm()){document.getElementById('vw-admin').innerHTML='<div class="alert danger">Prístup zamietnutý.</div>';return;}
   var cf=S.reservations.filter(function(r){return hc(r);}).length;
@@ -1070,7 +1076,7 @@ function rAdmin(){
     userRows+='<div class="urow">'
       +'<div class="av" style="width:26px;height:26px;background:'+(isA?'var(--bluebg)':'var(--greenbg)')+';color:'+(isA?'var(--blue)':'var(--green)')+'">'+ini+'</div>'
       +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(u.name||u.email)+'</div>'
-      +'<div style="font-size:11px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+u.email+'</div></div>'
+      +'<div style="font-size:11px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+u.email+'</div>'+'<div style="font-size:11px;color:var(--t3)">&#128336; '+fmtLL(u.last_login)+'</div></div>'
       +'<span class="rp" style="background:'+(isA?'var(--bluebg)':'var(--greenbg)')+';color:'+(isA?'var(--blue)':'var(--green)')+'">'+( isA?'Admin':'Tréner')+'</span>'
       +(me?'<span style="font-size:10px;color:var(--t3)">vy</span>':'<button class="btn sm danger" onclick="rmU(\''+u.email+'\')">&#x2715;</button>')
       +'</div>';
